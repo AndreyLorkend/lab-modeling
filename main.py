@@ -1,6 +1,4 @@
-from itertools import groupby
-from random import randrange
-
+import pandas as pd
 
 class LehmerGenerator:
     def __init__(self, seed):
@@ -21,12 +19,12 @@ class LehmerGenerator:
         return int(self.seed / self.m)
 
 
-class GeneratorTest:
+class FrequencyTest:
     def __init__(self, random_numbers, d):
         self.random_numbers = random_numbers
         self.d = d
 
-    def frequency_test(self):
+    def test(self):
         n = len(self.random_numbers)
         ps = 1 / self.d
         nps = n * ps
@@ -41,7 +39,12 @@ class GeneratorTest:
             v += pow((y_list[i] - nps), 2) / nps
         return v
 
-    def serial_test(self):
+class SerialTest:
+    def __init__(self, random_numbers, d):
+        self.random_numbers = random_numbers
+        self.d = d
+
+    def test(self):
         n = len(self.random_numbers)
         k = pow(self.d, 2)
         ps = 1 / k
@@ -65,21 +68,31 @@ def random_multi_comparison(x):
     return x
 
 
-if __name__ == '__main__':
-    x = 65539
-    y_list = []
+def run_rng_test(TestMethod, x, test_count, number_count, number_size):
     result = 0
-    test_count = 30
+    step_results = []
     for i in range(test_count):
         random_numbers = []
-        for j in range(1000):
+        for j in range(number_count):
            x = random_multi_comparison(x)
            #random_numbers.append(randrange(10))
-           random_numbers.append(x % 10)
-        generator_test = GeneratorTest(random_numbers, 10)
-        print(generator_test.serial_test())
-        result += generator_test.serial_test()
-    print(result / test_count)
+           random_numbers.append(x % number_size)
+        generator_test = TestMethod(random_numbers, number_size)
+        step_results.append(generator_test.test())
+        result += generator_test.test()
+    result = result / test_count
+    return step_results, result
+
+if __name__ == '__main__':
+    x = 65539
+    test_count = 30
+    number_count = 1000
+    number_size = 10
+
+    
+    print(run_rng_test(FrequencyTest, x, test_count, number_count, number_size))
+    print(run_rng_test(SerialTest, x, test_count, number_count, number_size))
+    
     # lehmer_generator = LehmerGenerator(1)
     # for i in range(30):
     #     print(lehmer_generator.next())
