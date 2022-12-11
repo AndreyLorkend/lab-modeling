@@ -78,10 +78,39 @@ def run_rng_test(TestMethod, x, test_count, number_count, number_size):
            #random_numbers.append(randrange(10))
            random_numbers.append(x % number_size)
         generator_test = TestMethod(random_numbers, number_size)
-        step_results.append(generator_test.test())
+        step_results.append(str(generator_test.test()))
         result += generator_test.test()
     result = result / test_count
-    return step_results, result
+    return step_results, result, TestMethod
+
+def saveToXml( rngTestsResults ):
+    print(rngTestsResults)
+
+    salaries = {}
+    
+    for rngTestResult in rngTestsResults:
+        step_results = rngTestResult[0]
+        result = rngTestResult[1]
+        TestMethod = rngTestResult[2]
+
+        testCount = ['№']
+        for i in range(len(step_results)):
+            testCount.append(i+1)
+
+        step_results.insert(0, "Хуй знает")
+
+        testCount.append("Avg")
+        step_results.append(result)
+
+        salaries[str(TestMethod.__name__)] = pd.DataFrame( { str(TestMethod.__name__) : testCount, "" : step_results })
+        
+    writer = pd.ExcelWriter('./rngTests.xlsx', engine='xlsxwriter')
+
+    for sheet_name in salaries.keys():
+        salaries[sheet_name].to_excel(writer, sheet_name=sheet_name, index=False)
+
+    writer.save()
+
 
 if __name__ == '__main__':
     x = 65539
@@ -89,9 +118,12 @@ if __name__ == '__main__':
     number_count = 1000
     number_size = 10
 
+    rngTestsResults = []
     
-    print(run_rng_test(FrequencyTest, x, test_count, number_count, number_size))
-    print(run_rng_test(SerialTest, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(FrequencyTest, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(SerialTest, x, test_count, number_count, number_size))
+
+    saveToXml(rngTestsResults)
     
     # lehmer_generator = LehmerGenerator(1)
     # for i in range(30):
