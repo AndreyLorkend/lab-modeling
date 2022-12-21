@@ -154,13 +154,6 @@ class KollekcionerTest:
         return Vi
 
 
-
-        
-                 
-
-        
-          
-
 def Stirling (a,b):
     if a == b:
         return 1
