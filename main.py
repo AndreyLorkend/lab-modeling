@@ -125,8 +125,6 @@ class KollekcionerTest:
         self.d = d
     
     def test(self):
-        for i in range(1000):
-            self.random_numbers[i] = random.randint(0,9)
         st = set()
         kollecionerCount = 0
         t = 0
