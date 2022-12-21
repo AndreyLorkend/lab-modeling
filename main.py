@@ -53,7 +53,7 @@ class FrequencyTest:
                     count += 1
             y_list.append(count)
             v += pow((y_list[i] - nps), 2) / nps
-        return v
+        return round(v, 4)
 
 
 class SerialTest:
@@ -75,7 +75,7 @@ class SerialTest:
                     if self.random_numbers[l] == i and self.random_numbers[l+1] == j:
                         count += 1
                 v += pow((count - nps), 2) / nps
-        return v
+        return round(v, 4)
 
 
 class IntervalTest:
@@ -133,7 +133,7 @@ class IntervalTest:
             a = counter[i] - c
             b = pow(a, 2)
             Vi = b/c
-        return Vi
+        return round(Vi, 4)
 
 
 class CollectorTest:
@@ -168,7 +168,7 @@ class CollectorTest:
             else: 
                 Ps = 1 - (math.factorial(self.d) / pow(self.d , i-1)) * Stirling(i-1, self.d)
             Vi += pow(counter[i] - collectorCount * Ps, 2) / (collectorCount * Ps)
-        return Vi
+        return round(Vi, 4)
 
 
 def Stirling(a,b):
@@ -201,30 +201,39 @@ def run_rng_test(TestMethod, Generator, x, test_count, number_count, number_size
         step_results.append(str(generator_test.test()))
         result += generator_test.test()
     result = result / test_count
-    return step_results, result, TestMethod
+    return step_results, result, TestMethod, Generator
 
 
-def save_to_xlsx( rngTestsResults ):
+def save_to_xlsx( rngTestsResults, salaries ):
     print(rngTestsResults)
-
-    salaries = {}
-    
-    for rngTestResult in rngTestsResults:
-        step_results = rngTestResult[0]
-        result = rngTestResult[1]
-        TestMethod = rngTestResult[2]
+    if(len(rngTestsResults) > 0 ): 
+        TestMethod = rngTestsResults[0][2]
+        step_results = rngTestsResults[0][0]
 
         testCount = ['№']
         for i in range(len(step_results)):
             testCount.append(i+1)
 
-        step_results.insert(0, "Хуй знает")
-
         testCount.append("Avg")
-        step_results.append(result)
 
-        salaries[str(TestMethod.__name__)] = pd.DataFrame( { str(TestMethod.__name__) : testCount, "" : step_results })
+        salar = {str(TestMethod.__name__) : testCount}
+
         
+        for rngTestResult in rngTestsResults:
+            step_results = rngTestResult[0]
+            result = rngTestResult[1]
+            Generator = rngTestResult[3]
+
+            step_results.insert(0, str(Generator.__name__))
+            
+            step_results.append(round(result, 4))
+            salar[str(Generator.__name__)] = step_results
+
+        salaries[str(TestMethod.__name__)] = pd.DataFrame( salar )
+            
+    return salaries
+
+def create_xlsx(salaries):
     writer = pd.ExcelWriter('./rngTests.xlsx', engine='xlsxwriter')
 
     for sheet_name in salaries.keys():
@@ -239,14 +248,35 @@ if __name__ == '__main__':
     number_count = 1000
     number_size = 10
 
-    rngTestsResults = []
-    
-    rngTestsResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    frequencyTestResults = []
+    frequencyTestResults.append(run_rng_test(FrequencyTest, LehmerGenerator, x, test_count, number_count, number_size))
+    frequencyTestResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
 
-    save_to_xlsx(rngTestsResults)
+    serialTestResults = []
+    serialTestResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    serialTestResults.append(run_rng_test(SerialTest, LehmerGenerator, x, test_count, number_count, number_size))
+
+    intervalTestResults = []
+    intervalTestResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    intervalTestResults.append(run_rng_test(IntervalTest, LehmerGenerator, x, test_count, number_count, number_size))
+
+    collectorTestResults = []
+    collectorTestResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    collectorTestResults.append(run_rng_test(CollectorTest, LehmerGenerator, x, test_count, number_count, number_size))
+
+    # rngTestsResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    # rngTestsResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    # rngTestsResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    # rngTestsResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+
+    salaries = {}
+
+    salaries = save_to_xlsx(frequencyTestResults, salaries)
+    salaries = save_to_xlsx(serialTestResults, salaries)
+    salaries = save_to_xlsx(intervalTestResults, salaries)
+    salaries = save_to_xlsx(collectorTestResults, salaries)
+
+    create_xlsx(salaries)
 
     # lehmer_generator = LehmerGenerator(1)
     # for i in range(30):
