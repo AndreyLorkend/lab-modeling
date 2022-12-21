@@ -1,3 +1,5 @@
+import math
+import random
 import pandas as pd
 
 class LehmerGenerator:
@@ -93,7 +95,7 @@ class GapTest:
         #         counter[r] += 1
         #     s += 1;
         for i in range(1000):
-            if s == 200:
+            if s == 50:
                 break
             r += 1
             if self.random_numbers[i] >= a and self.random_numbers[i] < b:
@@ -104,15 +106,55 @@ class GapTest:
                 s += 1
  
         p = b/10 -a/10
-        for i in range(t+1):
+        for i in range(len(counter)):
             Ps = 0.0
-            if i == t:
-                Ps = pow(1 - p, i)
-            else :
+            if i < 20:
                 Ps = p * pow(1 - p, i)
-            Vi += pow(counter[i] - s * Ps, 2) / (s* Ps)
+            else :
+                Ps = pow(1 - p, i)
+            # Vi += pow(counter[i] - s * Ps, 2) / (s* Ps)
+            c = s * Ps
+            a = counter[i] - c
+            b = pow(a, 2)
+            Vi = b/c
         return Vi
                     
+class KollekcionerTest:
+    def __init__(self, random_numbers, d):
+        self.random_numbers = random_numbers
+        self.d = d
+    
+    def test(self):
+        for i in range(1000):
+            self.random_numbers[i] = random.randint(0,9)
+        st = set()
+        kollecionerCount = 0
+        t = 0
+        counter = []
+        Vi = 0
+        for _ in range(21):
+            counter.append(0)
+        for item in self.random_numbers:
+            if  kollecionerCount == 10:
+                break
+            st.add(item)
+            t += 1
+            if len(st) == 10:
+                if t > 20:
+                    t = 20
+                counter[t] += 1
+                st.clear()
+                t = 0
+                kollecionerCount += 1
+        Ps = 0
+        for i in range(10,len(counter)):
+            if i < 20:
+                Ps = (math.factorial(self.d) / pow(self.d , i)) * Stirling(i-1, self.d-1)
+            else: 
+                Ps = 1 - (math.factorial(self.d) / pow(self.d , i-1)) * Stirling(i-1, self.d)
+            Vi += pow(counter[i] - kollecionerCount * Ps, 2) / (kollecionerCount * Ps)
+        return Vi
+
 
 
         
@@ -121,7 +163,15 @@ class GapTest:
         
           
 
+def Stirling (a,b):
+    if a == b:
+        return 1
+    elif a == 0 or b == 0 or a < b:
+        return 0
+    else: 
+        return Stirling(a-1,b-1) + b * Stirling(a-1, b)
 
+        
 def random_multi_comparison(x):
     m = 2147483647
     a = 65539
@@ -184,6 +234,7 @@ if __name__ == '__main__':
     rngTestsResults.append(run_rng_test(FrequencyTest, x, test_count, number_count, number_size))
     rngTestsResults.append(run_rng_test(SerialTest, x, test_count, number_count, number_size))
     rngTestsResults.append(run_rng_test(GapTest, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(KollekcionerTest, x, test_count, number_count, number_size))
 
     saveToXml(rngTestsResults)
     
