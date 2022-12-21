@@ -60,6 +60,67 @@ class SerialTest:
                 v += pow((count - nps), 2) / nps
         return v
 
+class GapTest:
+    def __init__(self, random_numbers, d):
+        self.random_numbers = random_numbers
+        self.d = d
+    
+    def test(self):
+        a = 3
+        b = 4
+        j = -1
+        n = 1000
+        s = 0 
+        t = 20
+        r = 0
+        Vi = 0
+        v_list = []
+        counter = []
+        for _ in range(t+1):
+            counter.append(0)
+        iter = 0
+        # while s != n and j<999:
+        #     r = 0
+        #     j += 1
+        #     while self.random_numbers[j] < a and self.random_numbers[j] < b:
+        #         j += 1
+        #         r += 1
+        #         if j >= 999:
+        #             break
+        #     if r >= t:
+        #         counter[t] += 1
+        #     else:
+        #         counter[r] += 1
+        #     s += 1;
+        for i in range(1000):
+            if s == 200:
+                break
+            r += 1
+            if self.random_numbers[i] >= a and self.random_numbers[i] < b:
+                if (r-1) > t:
+                    r = 20
+                counter[r-1] += 1
+                r = 0
+                s += 1
+ 
+        p = b/10 -a/10
+        for i in range(t+1):
+            Ps = 0.0
+            if i == t:
+                Ps = pow(1 - p, i)
+            else :
+                Ps = p * pow(1 - p, i)
+            Vi += pow(counter[i] - s * Ps, 2) / (s* Ps)
+        return Vi
+                    
+
+
+        
+                 
+
+        
+          
+
 
 def random_multi_comparison(x):
     m = 2147483647
@@ -122,6 +183,7 @@ if __name__ == '__main__':
     
     rngTestsResults.append(run_rng_test(FrequencyTest, x, test_count, number_count, number_size))
     rngTestsResults.append(run_rng_test(SerialTest, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(GapTest, x, test_count, number_count, number_size))
 
     saveToXml(rngTestsResults)
     
