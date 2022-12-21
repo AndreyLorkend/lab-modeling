@@ -1,8 +1,10 @@
 import math
 import random
 import pandas as pd
+import os
 
 
+# Генератор РРСЧ Лемера
 class LehmerGenerator:
     def __init__(self, seed):
         if seed <= 0 or seed == 2147483647:
@@ -24,6 +26,7 @@ class LehmerGenerator:
         return int((self.high_edge - self.low_edge) * (self.seed / self.m) + self.low_edge)
 
 
+# Генератор РРСЧ Мультипликативного сравнения
 class RndMultiCmpGenerator:
     def __init__(self, x):
         self.x = x
@@ -34,6 +37,21 @@ class RndMultiCmpGenerator:
         self.x = (self.a * self.x) % self.m
         return self.x
 
+
+# встроенный генератор случайных чисел
+class BuiltInRnd:
+    def __init__(self, x):
+        pass
+
+    def next(self):
+        return random.randint(0, 9)
+
+class OSRnd:
+    def __init__(self, x):
+        pass
+
+    def next(self):
+        return int.from_bytes(os.urandom(4), "big") % 10
 
 class FrequencyTest:
     def __init__(self, random_numbers, d):
@@ -240,11 +258,11 @@ if __name__ == '__main__':
     number_size = 10
 
     rngTestsResults = []
-    
-    rngTestsResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+
+    rngTestsResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(SerialTest, OSRnd, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(IntervalTest, OSRnd, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(CollectorTest, OSRnd, x, test_count, number_count, number_size))
 
     save_to_xlsx(rngTestsResults)
 
