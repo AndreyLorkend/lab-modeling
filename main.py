@@ -2,6 +2,7 @@ import math
 import random
 import pandas as pd
 
+
 class LehmerGenerator:
     def __init__(self, seed):
         if seed <= 0 or seed == 2147483647:
@@ -11,6 +12,8 @@ class LehmerGenerator:
         self.m = 2147483647
         self.q = 127773
         self.r = 2836
+        self.high_edge = 10
+        self.low_edge = 0
 
     def next(self):
         hi = self.seed / self.q
@@ -18,7 +21,18 @@ class LehmerGenerator:
         self.seed = (self.a * lo) - (self.r * hi)
         if self.seed <= 0:
             self.seed = self.seed + self.m
-        return int(self.seed / self.m)
+        return int((self.high_edge - self.low_edge) * (self.seed / self.m) + self.low_edge)
+
+
+class RndMultiCmpGenerator:
+    def __init__(self, x):
+        self.x = x
+        self.m = 2147483647
+        self.a = 65539
+
+    def next(self):
+        self.x = (self.a * self.x) % self.m
+        return self.x
 
 
 class FrequencyTest:
@@ -41,6 +55,7 @@ class FrequencyTest:
             v += pow((y_list[i] - nps), 2) / nps
         return v
 
+
 class SerialTest:
     def __init__(self, random_numbers, d):
         self.random_numbers = random_numbers
@@ -62,7 +77,8 @@ class SerialTest:
                 v += pow((count - nps), 2) / nps
         return v
 
-class GapTest:
+
+class IntervalTest:
     def __init__(self, random_numbers, d):
         self.random_numbers = random_numbers
         self.d = d
@@ -118,22 +134,23 @@ class GapTest:
             b = pow(a, 2)
             Vi = b/c
         return Vi
-                    
-class KollekcionerTest:
+
+
+class CollectorTest:
     def __init__(self, random_numbers, d):
         self.random_numbers = random_numbers
         self.d = d
     
     def test(self):
         st = set()
-        kollecionerCount = 0
+        collectorCount = 0
         t = 0
         counter = []
         Vi = 0
         for _ in range(21):
             counter.append(0)
         for item in self.random_numbers:
-            if  kollecionerCount == 10:
+            if  collectorCount == 10:
                 break
             st.add(item)
             t += 1
@@ -143,18 +160,18 @@ class KollekcionerTest:
                 counter[t] += 1
                 st.clear()
                 t = 0
-                kollecionerCount += 1
+                collectorCount += 1
         Ps = 0
         for i in range(10,len(counter)):
             if i < 20:
                 Ps = (math.factorial(self.d) / pow(self.d , i)) * Stirling(i-1, self.d-1)
             else: 
                 Ps = 1 - (math.factorial(self.d) / pow(self.d , i-1)) * Stirling(i-1, self.d)
-            Vi += pow(counter[i] - kollecionerCount * Ps, 2) / (kollecionerCount * Ps)
+            Vi += pow(counter[i] - collectorCount * Ps, 2) / (collectorCount * Ps)
         return Vi
 
 
-def Stirling (a,b):
+def Stirling(a,b):
     if a == b:
         return 1
     elif a == 0 or b == 0 or a < b:
@@ -163,20 +180,21 @@ def Stirling (a,b):
         return Stirling(a-1,b-1) + b * Stirling(a-1, b)
 
         
-def random_multi_comparison(x):
-    m = 2147483647
-    a = 65539
-    x = (a * x) % m
-    return x
+# def random_multi_comparison(x):
+#     m = 2147483647
+#     a = 65539
+#     x = (a * x) % m
+#     return x
 
 
-def run_rng_test(TestMethod, x, test_count, number_count, number_size):
+def run_rng_test(TestMethod, Generator, x, test_count, number_count, number_size):
     result = 0
     step_results = []
+    random_generator = Generator(x)
     for i in range(test_count):
         random_numbers = []
         for j in range(number_count):
-           x = random_multi_comparison(x)
+           x = random_generator.next()
            #random_numbers.append(randrange(10))
            random_numbers.append(x % number_size)
         generator_test = TestMethod(random_numbers, number_size)
@@ -185,7 +203,8 @@ def run_rng_test(TestMethod, x, test_count, number_count, number_size):
     result = result / test_count
     return step_results, result, TestMethod
 
-def saveToXml( rngTestsResults ):
+
+def save_to_xlsx( rngTestsResults ):
     print(rngTestsResults)
 
     salaries = {}
@@ -222,13 +241,13 @@ if __name__ == '__main__':
 
     rngTestsResults = []
     
-    rngTestsResults.append(run_rng_test(FrequencyTest, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(SerialTest, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(GapTest, x, test_count, number_count, number_size))
-    rngTestsResults.append(run_rng_test(KollekcionerTest, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    rngTestsResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
 
-    saveToXml(rngTestsResults)
-    
+    save_to_xlsx(rngTestsResults)
+
     # lehmer_generator = LehmerGenerator(1)
     # for i in range(30):
     #     print(lehmer_generator.next())
