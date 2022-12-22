@@ -45,7 +45,8 @@ class BuiltInRnd:
         pass
 
     def next(self):
-        return random.randint(0, 9)
+        return random.randint(0, 2147483647)
+
 
 class OSRnd:
     def __init__(self, x):
@@ -53,6 +54,7 @@ class OSRnd:
 
     def next(self):
         return int.from_bytes(os.urandom(4), "big") % 10
+
 
 class FrequencyTest:
     def __init__(self, random_numbers, d):
@@ -106,9 +108,8 @@ class IntervalTest:
         a = 3
         b = 4
         j = -1
-        n = 1000
-        s = 0 
-        t = 20
+        s = 0
+        t = 15
         r = 0
         Vi = 0
         v_list = []
@@ -116,42 +117,30 @@ class IntervalTest:
         for _ in range(t+1):
             counter.append(0)
         iter = 0
-        # while s != n and j<999:
-        #     r = 0
-        #     j += 1
-        #     while self.random_numbers[j] < a and self.random_numbers[j] < b:
-        #         j += 1
-        #         r += 1
-        #         if j >= 999:
-        #             break
-        #     if r >= t:
-        #         counter[t] += 1
-        #     else:
-        #         counter[r] += 1
-        #     s += 1;
-        for i in range(1000):
-            if s == 50:
-                break
-            r += 1
-            if self.random_numbers[i] >= a and self.random_numbers[i] < b:
-                if (r-1) > t:
-                    r = 20
-                counter[r-1] += 1
+        for i in range(10000):
+            if self.random_numbers[i] == a:
+                if r > t:
+                    r = 15
+                counter[r] += 1
                 r = 0
                 s += 1
+            r += 1
  
-        p = b/10 -a/10
+        p = b/10 - a/10
+        vvv = 0
         for i in range(len(counter)):
             Ps = 0.0
-            if i < 20:
+            if i < 15:
                 Ps = p * pow(1 - p, i)
             else :
                 Ps = pow(1 - p, i)
-            # Vi += pow(counter[i] - s * Ps, 2) / (s* Ps)
             c = s * Ps
             a = counter[i] - c
             b = pow(a, 2)
             Vi = b/c
+            print(i, " : ", counter[i], " : ", Ps)
+            vvv += Ps
+        print(vvv)
         return round(Vi, 4)
 
 
@@ -190,13 +179,13 @@ class CollectorTest:
         return round(Vi, 4)
 
 
-def Stirling(a,b):
+def Stirling(a, b):
     if a == b:
         return 1
     elif a == 0 or b == 0 or a < b:
         return 0
     else: 
-        return Stirling(a-1,b-1) + b * Stirling(a-1, b)
+        return Stirling(a-1, b-1) + b * Stirling(a-1, b)
 
         
 # def random_multi_comparison(x):
@@ -216,6 +205,11 @@ def run_rng_test(TestMethod, Generator, x, test_count, number_count, number_size
            x = random_generator.next()
            #random_numbers.append(randrange(10))
            random_numbers.append(x % number_size)
+    #for j in range(20):
+    #    for k in range(50):
+    #        print(random_numbers[j + k], end=" ")
+    #    print(" ")
+
         generator_test = TestMethod(random_numbers, number_size)
         step_results.append(generator_test.test())
         result += generator_test.test()
@@ -264,7 +258,7 @@ def create_xlsx(salaries):
 if __name__ == '__main__':
     x = 65539
     test_count = 30
-    number_count = 1000
+    number_count = 10000
     number_size = 10
 
     frequencyTestResults = []
@@ -274,20 +268,20 @@ if __name__ == '__main__':
     frequencyTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
     serialTestResults = []
-    serialTestResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    #serialTestResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
     serialTestResults.append(run_rng_test(SerialTest, LehmerGenerator, x, test_count, number_count, number_size))
     serialTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
     serialTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
     intervalTestResults = []
-    intervalTestResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    #intervalTestResults.append(run_rng_test(IntervalTest, LehmerGenerator, x, test_count, number_count, number_size))
-    intervalTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
-    intervalTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
+    #intervalTestResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    intervalTestResults.append(run_rng_test(IntervalTest, LehmerGenerator, x, test_count, number_count, number_size))
+    #intervalTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
+    #intervalTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
     collectorTestResults = []
-    collectorTestResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    #collectorTestResults.append(run_rng_test(CollectorTest, LehmerGenerator, x, test_count, number_count, number_size))
+    #collectorTestResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    collectorTestResults.append(run_rng_test(CollectorTest, LehmerGenerator, x, test_count, number_count, number_size))
     collectorTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
     collectorTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
