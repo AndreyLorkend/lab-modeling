@@ -2,6 +2,7 @@ import math
 import random
 import pandas as pd
 import os
+import numpy
 
 
 # Генератор РРСЧ Лемера
@@ -206,7 +207,7 @@ def Stirling(a,b):
 
 
 def run_rng_test(TestMethod, Generator, x, test_count, number_count, number_size):
-    result = 0
+    result = 0.0
     step_results = []
     random_generator = Generator(x)
     for i in range(test_count):
@@ -216,9 +217,9 @@ def run_rng_test(TestMethod, Generator, x, test_count, number_count, number_size
            #random_numbers.append(randrange(10))
            random_numbers.append(x % number_size)
         generator_test = TestMethod(random_numbers, number_size)
-        step_results.append(str(generator_test.test()))
+        step_results.append(generator_test.test())
         result += generator_test.test()
-    result = result / test_count
+    result = (result / test_count) * 1.0
     return step_results, result, TestMethod, Generator
 
 
@@ -268,19 +269,27 @@ if __name__ == '__main__':
 
     frequencyTestResults = []
     frequencyTestResults.append(run_rng_test(FrequencyTest, LehmerGenerator, x, test_count, number_count, number_size))
-    frequencyTestResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    #frequencyTestResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
+    frequencyTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
+    frequencyTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
     serialTestResults = []
     serialTestResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
     serialTestResults.append(run_rng_test(SerialTest, LehmerGenerator, x, test_count, number_count, number_size))
+    serialTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
+    serialTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
     intervalTestResults = []
     intervalTestResults.append(run_rng_test(IntervalTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    intervalTestResults.append(run_rng_test(IntervalTest, LehmerGenerator, x, test_count, number_count, number_size))
+    #intervalTestResults.append(run_rng_test(IntervalTest, LehmerGenerator, x, test_count, number_count, number_size))
+    intervalTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
+    intervalTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
     collectorTestResults = []
     collectorTestResults.append(run_rng_test(CollectorTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
-    collectorTestResults.append(run_rng_test(CollectorTest, LehmerGenerator, x, test_count, number_count, number_size))
+    #collectorTestResults.append(run_rng_test(CollectorTest, LehmerGenerator, x, test_count, number_count, number_size))
+    collectorTestResults.append(run_rng_test(FrequencyTest, BuiltInRnd, x, test_count, number_count, number_size))
+    collectorTestResults.append(run_rng_test(FrequencyTest, OSRnd, x, test_count, number_count, number_size))
 
     # rngTestsResults.append(run_rng_test(FrequencyTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
     # rngTestsResults.append(run_rng_test(SerialTest, RndMultiCmpGenerator, x, test_count, number_count, number_size))
